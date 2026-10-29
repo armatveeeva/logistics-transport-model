@@ -1,5 +1,7 @@
 from sqlalchemy import Column, Integer, String
-from app.database import Base
+
+from logistics_model.database import Base
+
 
 class Basin(Base):
     __tablename__ = "basin"

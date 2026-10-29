@@ -1,6 +1,8 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from sqlalchemy import Column, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
-from app.database import Base
+
+from logistics_model.database import Base
+
 
 class Risk(Base):
     __tablename__ = "risk"

@@ -1,6 +1,8 @@
-from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy import Column, Float, Integer, String
 from sqlalchemy.orm import relationship
-from app.database import Base
+
+from logistics_model.database import Base
+
 
 class Cargo(Base):
     __tablename__ = "cargo"

@@ -1,6 +1,8 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
-from app.database import Base
+
+from logistics_model.database import Base
+
 
 class ServiceType(Base):
     __tablename__ = "service_type"

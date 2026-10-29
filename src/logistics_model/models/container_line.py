@@ -1,6 +1,8 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
-from app.database import Base
+
+from logistics_model.database import Base
+
 
 class ContainerLine(Base):
     __tablename__ = "container_line"
