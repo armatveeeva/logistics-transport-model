@@ -1,5 +1,4 @@
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import relationship
 
 from logistics_model.database import Base
 
@@ -9,6 +8,3 @@ class ServiceType(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False, unique=True)
-
-    # Связи
-    operators = relationship("OperatorService", back_populates="service_type")

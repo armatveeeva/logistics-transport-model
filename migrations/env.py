@@ -9,6 +9,7 @@ current_dir = Path(__file__).resolve().parent
 src_dir = current_dir.parents[1] / "src"
 sys.path.insert(0, str(src_dir))
 
+import logistics_model.models  # noqa: F401
 from logistics_model.config import settings
 from logistics_model.database import Base
 

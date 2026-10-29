@@ -7,6 +7,10 @@ from logistics_model.database import Base
 
 if TYPE_CHECKING:
     from logistics_model.models.basin import Basin
+    from logistics_model.models.container_line import ContainerLine
+    from logistics_model.models.container_turnover import ContainerTurnover
+    from logistics_model.models.incident import Incident
+    from logistics_model.models.operator import Operator
 
 
 class Port(Base):
@@ -20,3 +24,7 @@ class Port(Base):
     throughput_capacity: Mapped[float | None] = mapped_column(Float)
 
     basin: Mapped["Basin"] = relationship(back_populates="ports")
+    container_lines: Mapped[list["ContainerLine"]] = relationship(back_populates="port")
+    container_turnovers: Mapped[list["ContainerTurnover"]] = relationship(back_populates="port")
+    operators: Mapped[list["Operator"]] = relationship(back_populates="port")
+    incidents: Mapped[list["Incident"]] = relationship(back_populates="port")

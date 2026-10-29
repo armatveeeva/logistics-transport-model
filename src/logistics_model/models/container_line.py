@@ -1,17 +1,20 @@
-from sqlalchemy import Column, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
+from typing import TYPE_CHECKING
+
+from sqlalchemy import ForeignKey, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from logistics_model.database import Base
+
+if TYPE_CHECKING:
+    from logistics_model.models.port import Port
 
 
 class ContainerLine(Base):
     __tablename__ = "container_line"
 
-    id = Column(Integer, primary_key=True, index=True)
-    port_id = Column(Integer, ForeignKey("port.id"))
-    name = Column(String, nullable=False)
-    agent = Column(String)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    port_id: Mapped[int] = mapped_column(ForeignKey("port.id"))
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    agent: Mapped[str | None] = mapped_column(String(200))
 
-    # Связи
-    port = relationship("Port", back_populates="container_lines")
-    incidents = relationship("Incident", back_populates="container_line")
+    port: Mapped["Port"] = relationship(back_populates="container_lines")
