@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: logistics
+      POSTGRES_PASSWORD: logistics
+      POSTGRES_DB: logistics
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U logistics"]
+      interval: 5s
+      retries: 10
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg2://logistics:logistics@db:5432/logistics
+      LOG_LEVEL: INFO
+    volumes:
+      # Монтируем seed-данные только для чтения
+      - ./data/seed:/app/data/seed:ro
+
+volumes:
+  pgdata:
