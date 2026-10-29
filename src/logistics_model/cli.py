@@ -13,7 +13,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def main():
+def main() -> None:
     excel_path = Path("data/seed/export_logistics_db.xlsx")
     if not excel_path.exists():
         excel_path = Path("export_logistics_db.xlsx")

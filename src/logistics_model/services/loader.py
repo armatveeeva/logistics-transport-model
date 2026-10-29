@@ -38,7 +38,10 @@ def load_workbook(session: Session, excel_path: str) -> None:
                 if column_obj is not None and isinstance(column_obj.type, Date | DateTime):
                     df[col] = pd.to_datetime(df[col], errors="coerce")
 
-            rows = df.astype(object).where(pd.notna(df), None).to_dict("records")
+            rows = [
+                {str(k): v for k, v in row.items()}
+                for row in df.astype(object).where(pd.notna(df), None).to_dict("records")
+            ]
 
             session.execute(table.insert(), rows)
             logger.info("Загружено в таблицу '%s': %d записей", table.name, len(rows))

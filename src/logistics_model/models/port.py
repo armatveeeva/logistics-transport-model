@@ -1,7 +1,12 @@
+from typing import TYPE_CHECKING
+
 from sqlalchemy import Float, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from logistics_model.database import Base
+
+if TYPE_CHECKING:
+    from logistics_model.models.basin import Basin
 
 
 class Port(Base):
@@ -14,4 +19,4 @@ class Port(Base):
     berth_count: Mapped[int | None] = mapped_column()
     throughput_capacity: Mapped[float | None] = mapped_column(Float)
 
-    basin: Mapped["Basin"] = relationship(back_populates="ports")  # noqa: F821
+    basin: Mapped["Basin"] = relationship(back_populates="ports")

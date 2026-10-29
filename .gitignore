@@ -11,3 +11,5 @@ __pycache__/
 .pytest_cache/
 .coverage
 data/*.db
+.DS_Store
+logistics.db
