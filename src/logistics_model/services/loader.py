@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 from sqlalchemy.orm import Session
 
 from logistics_model.database import Base
@@ -23,8 +23,7 @@ from logistics_model.schemas import (
 
 logger = logging.getLogger(__name__)
 
-# Маппинг: имя таблицы → (Pydantic-схема, SQLAlchemy-таблица)
-TABLE_REGISTRY: dict[str, tuple[type, Any]] = {
+TABLE_REGISTRY: dict[str, tuple[type[BaseModel], Any]] = {
     "basin": (BasinIn, None),
     "cargo": (CargoIn, None),
     "service_type": (ServiceTypeIn, None),
@@ -37,9 +36,9 @@ TABLE_REGISTRY: dict[str, tuple[type, Any]] = {
 }
 
 
-def _coerce_dates(row: dict[str, Any], schema_cls: type) -> dict[str, Any]:
+def _coerce_dates(row: dict[str, Any], schema_cls: type[BaseModel]) -> dict[str, Any]:
     """Преобразует строки в datetime.date там, где схема ожидает date."""
-    hints = schema_cls.model_fields  # type: ignore
+    hints = schema_cls.model_fields
     for field_name, field_info in hints.items():
         if field_name not in row or row[field_name] is None:
             continue
@@ -65,7 +64,7 @@ def load_workbook(session: Session, excel_path: str) -> None:
     for table in tables:
         if table.name in TABLE_REGISTRY:
             schema_cls, _ = TABLE_REGISTRY[table.name]
-            TABLE_REGISTRY[table.name] = (schema_cls, table)  # type: ignore
+            TABLE_REGISTRY[table.name] = (schema_cls, table)
 
     with session.begin():
         for table in reversed(tables):
@@ -82,11 +81,11 @@ def load_workbook(session: Session, excel_path: str) -> None:
                 logger.warning("Лист '%s' пуст или отсутствует", table.name)
                 continue
 
-            valid: list[Any] = []
+            valid: list[BaseModel] = []
             rejected = 0
             for index, row in df.iterrows():
                 clean = {str(k): v for k, v in row.to_dict().items() if pd.notna(v)}
-                clean = _coerce_dates(clean, schema_cls)  # type: ignore
+                clean = _coerce_dates(clean, schema_cls)
                 try:
                     validated = schema_cls(**clean)
                     valid.append(validated)
@@ -98,7 +97,7 @@ def load_workbook(session: Session, excel_path: str) -> None:
                         )
 
             if valid:
-                repo = BaseRepository(session, table, schema_cls)  # type: ignore
+                repo: BaseRepository[Any] = BaseRepository(session, table, schema_cls)
                 count = repo.insert_many(valid)
                 logger.info(
                     "Загружено в '%s': %d записей (отклонено: %d)", table.name, count, rejected
