@@ -1,6 +1,7 @@
 import logging
 from datetime import date, datetime
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 from pydantic import ValidationError
@@ -22,7 +23,8 @@ from logistics_model.schemas import (
 
 logger = logging.getLogger(__name__)
 
-TABLE_REGISTRY = {
+# Маппинг: имя таблицы → (Pydantic-схема, SQLAlchemy-таблица)
+TABLE_REGISTRY: dict[str, tuple[type, Any]] = {
     "basin": (BasinIn, None),
     "cargo": (CargoIn, None),
     "service_type": (ServiceTypeIn, None),
@@ -35,9 +37,9 @@ TABLE_REGISTRY = {
 }
 
 
-def _coerce_dates(row: dict, schema_cls: type) -> dict:
+def _coerce_dates(row: dict[str, Any], schema_cls: type) -> dict[str, Any]:
     """Преобразует строки в datetime.date там, где схема ожидает date."""
-    hints = schema_cls.model_fields
+    hints = schema_cls.model_fields  # type: ignore
     for field_name, field_info in hints.items():
         if field_name not in row or row[field_name] is None:
             continue
@@ -63,7 +65,7 @@ def load_workbook(session: Session, excel_path: str) -> None:
     for table in tables:
         if table.name in TABLE_REGISTRY:
             schema_cls, _ = TABLE_REGISTRY[table.name]
-            TABLE_REGISTRY[table.name] = (schema_cls, table)
+            TABLE_REGISTRY[table.name] = (schema_cls, table)  # type: ignore
 
     with session.begin():
         for table in reversed(tables):
@@ -80,23 +82,23 @@ def load_workbook(session: Session, excel_path: str) -> None:
                 logger.warning("Лист '%s' пуст или отсутствует", table.name)
                 continue
 
-            valid: list = []
+            valid: list[Any] = []
             rejected = 0
             for index, row in df.iterrows():
-                clean = {k: v for k, v in row.to_dict().items() if pd.notna(v)}
-                clean = _coerce_dates(clean, schema_cls)
+                clean = {str(k): v for k, v in row.to_dict().items() if pd.notna(v)}
+                clean = _coerce_dates(clean, schema_cls)  # type: ignore
                 try:
                     validated = schema_cls(**clean)
                     valid.append(validated)
                 except ValidationError as e:
                     rejected += 1
-                    if rejected <= 3:  # логируем первые 3 ошибки на таблицу
+                    if rejected <= 3:
                         logger.warning(
                             "Строка %d в '%s' отклонена: %s", index, table.name, e.errors()[0]
                         )
 
             if valid:
-                repo = BaseRepository(session, table, schema_cls)
+                repo = BaseRepository(session, table, schema_cls)  # type: ignore
                 count = repo.insert_many(valid)
                 logger.info(
                     "Загружено в '%s': %d записей (отклонено: %d)", table.name, count, rejected

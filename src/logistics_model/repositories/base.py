@@ -20,4 +20,4 @@ class BaseRepository(Generic[T]):
         if not records:
             return 0
         result = self.session.execute(self.table.insert(), records)
-        return result.rowcount
+        return int(result.rowcount) if result.rowcount else 0  # type: ignore
